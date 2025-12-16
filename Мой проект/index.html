@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<!-- 
+  ГЛАВНАЯ СТРАНИЦА ПРОЕКТА "NEXT PEAK"
+  Веб-приложение с коллекцией неоновых игр в стиле ретро-аркады
+  Использует Firebase для авторизации и хранения рекордов
+-->
+<html lang="ru">
+<head>
+  <!-- Базовые настройки страницы -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NEXT PEAK</title>
+
+  <!-- Подключение стилей -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Подключение шрифта Orbitron для неонового стиля -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <!-- Иконка сайта (favicon) -->
+  <link rel="icon" href="img/favicon.jpg" type="image/jpeg">
+  <link rel="shortcut icon" href="img/favicon.jpg" type="image/jpeg">
+  <link rel="apple-touch-icon" href="img/favicon.jpg">
+
+  <!-- Подключение Firebase SDK для авторизации и базы данных -->
+  <!-- ВАЖНО: эти скрипты должны загрузиться ДО inline-скрипта авторизации ниже, поэтому без defer -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- ========== ОКНО АВТОРИЗАЦИИ ========== -->
+  <!-- Модальное окно для входа/регистрации пользователей -->
+  <div id="authModal">
+    <div class="auth-container">
+      <h2>NEXT PEAK</h2>
+      
+      <!-- Вкладки для переключения между входом и регистрацией -->
+      <div class="tabs">
+        <button class="tab active" data-form="login">ВХОД</button>
+        <button class="tab" data-form="register">РЕГИСТРАЦИЯ</button>
+      </div>
+
+      <!-- Форма входа в систему -->
+      <div id="loginForm" class="form active">
+        <input type="text" id="loginNickname" placeholder="Никнейм" required>
+        <input type="password" id="loginPassword" placeholder="Пароль" required>
+        <button id="loginBtn">ВОЙТИ</button>
+      </div>
+
+      <!-- Форма регистрации нового пользователя -->
+      <div id="registerForm" class="form">
+        <input type="text" id="regNickname" placeholder="Никнейм" maxlength="15" required>
+        <input type="email" id="regEmail" placeholder="Email" required>
+        <input type="password" id="regPassword" placeholder="Пароль (6+ символов)" required>
+        <button id="registerBtn">СОЗДАТЬ АККАУНТ</button>
+      </div>
+
+      <!-- Кнопка для игры без регистрации (гостевой режим) -->
+      <div class="guest">
+        <button id="playGuest">ИГРАТЬ КАК ГОСТЬ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ГЛАВНОЕ МЕНЮ ========== -->
+  <main class="container">
+    <h1>Выбери игру</h1>
+
+    <!-- Блок с информацией о пользователе и кнопками входа/выхода -->
+    <div id="userInfo" style="display: flex; align-items: center; gap: 30px; margin-bottom: 30px; opacity: 0; transition: opacity 0.8s ease;">
+      <div id="userNickname" style="font-size: 2.2rem; color: #0ff; text-shadow: 0 0 20px #0ff; font-weight: bold;">
+        Гость
+      </div>
+      <div id="authButtonContainer">
+        <!-- Кнопка входа (показывается для неавторизованных пользователей) -->
+        <button id="loginBtnMenu" style="display: none; background: rgba(30, 255, 0, 0.25); border: 3px solid #74ff33; color: #66ff8c; padding: 12px 32px; border-radius: 25px; font-size: 1.2rem; cursor: pointer; box-shadow: 0 0 25px rgba(0, 255, 13, 0.5); transition: all 0.3s;">
+          Войти
+        </button>
+        <!-- Кнопка выхода (показывается для авторизованных пользователей) -->
+        <button id="logoutBtn" style="display: none; background: rgba(255,0,0,0.25); border: 3px solid #ff3366; color: #ff6699; padding: 12px 32px; border-radius: 25px; font-size: 1.2rem; cursor: pointer; box-shadow: 0 0 25px rgba(255,0,0,0.5); transition: all 0.3s;">
+          Выйти
+        </button>
+      </div>
+    </div>
+
+    <!-- Лаунчер игр с превью и карточками -->
+    <div class="game-launcher">
+      <!-- Блок с живым превью игры (canvas для анимации) -->
+      <div class="live-preview-bg" id="livePreviewBg">
+        <canvas id="botCanvas" width="1000" height="720"></canvas>
+        <!-- Наложение с информацией об игре -->
+        <div class="overlay-info">
+          <h2 id="title">Космический Стрелок</h2>
+          <p id="desc">Уничтожай астероиды в неоновом космосе</p>
+          <button id="playBtn">ИГРАТЬ</button>
+        </div>
+      </div>
+
+      <!-- Стек карточек с играми (вертикальная карусель) -->
+      <div class="cards-stack">
+        <!-- Карточка игры: Космический Стрелок -->
+        <div class="stack-card active" data-id="0">
+          <div class="game-name">Космический Стрелок</div>
+          <div class="game-record"></div>
+        </div>
+        <!-- Карточка игры: Арканоид -->
+        <div class="stack-card" data-id="1">
+          <div class="game-name">Арканоид</div>
+          <div class="game-record"></div>
+        </div>
+        <!-- Карточка игры: Змейка (в разработке) -->
+        <div class="stack-card" data-id="2">
+          <div class="game-name">Змейка</div>
+          <div class="game-record"></div>
+        </div>
+        <!-- Карточка игры: Тетрис (в разработке) -->
+        <div class="stack-card" data-id="3">
+          <div class="game-name">Тетрис</div>
+          <div class="game-record"></div>
+        </div>
+        <!-- Карточка игры: Память (в разработке) -->
+        <div class="stack-card" data-id="4">
+          <div class="game-name">Память</div>
+          <div class="game-record"></div>
+        </div>
+      </div>
+
+      <!-- Кнопки навигации между играми -->
+      <button id="prevBtn" class="nav-btn">←</button>
+      <button id="nextBtn" class="nav-btn">→</button>
+    </div>
+  </main>
+
+  <!-- ========== СКРИПТ АВТОРИЗАЦИИ ========== -->
+  <script>
+    // Конфигурация Firebase (подключение к проекту)
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8j7J7uxg9SyTrbfGoLBuszJalrbRHJ0w",
+      authDomain: "neon-games-2025.firebaseapp.com",
+      projectId: "neon-games-2025",
+      storageBucket: "neon-games-2025.firebasestorage.app",
+      messagingSenderId: "509863622306",
+      appId: "1:509863622306:web:e53fa3685235eefcba89fb"
+    };
+
+    // Инициализация Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth(); // Сервис авторизации
+    const db = firebase.firestore(); // База данных Firestore
+
+    // Текущий пользователь (null если не авторизован)
+    let currentUser = null;
+
+    // ========== ОБРАБОТКА ВКЛАДОК ==========
+    // Переключение между формой входа и регистрации
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Убираем активный класс со всех вкладок
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        // Показываем соответствующую форму
+        document.getElementById('loginForm').classList.toggle('active', tab.dataset.form === 'login');
+        document.getElementById('registerForm').classList.toggle('active', tab.dataset.form === 'register');
+      });
+    });
+
+    // ========== РЕГИСТРАЦИЯ НОВОГО ПОЛЬЗОВАТЕЛЯ ==========
+    document.getElementById('registerBtn').addEventListener('click', () => {
+      const nickname = document.getElementById('regNickname').value.trim();
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPassword').value;
+
+      // Валидация данных
+      if (!nickname || !email || password.length < 6) {
+        alert('Заполни все поля правильно!');
+        return;
+      }
+
+      // Создание пользователя в Firebase Auth
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(cred => {
+          // Сохранение дополнительных данных (никнейм) в Firestore
+          return db.collection('users').doc(cred.user.uid).set({
+            nickname, email, records: {} // records - объект для хранения рекордов по играм
+          });
+        })
+        .then(() => alert('Аккаунт создан!'))
+        .catch(err => alert('Ошибка: ' + err.message));
+    });
+
+    // ========== ВХОД ПО НИКНЕЙМУ ==========
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const nickname = document.getElementById('loginNickname').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      // Поиск пользователя по никнейму в Firestore
+      db.collection('users').where('nickname', '==', nickname).get()
+        .then(snapshot => {
+          if (snapshot.empty) throw new Error('Игрок не найден');
+          // Получаем email из найденного документа
+          const email = snapshot.docs[0].data().email;
+          // Вход по email и паролю
+          return auth.signInWithEmailAndPassword(email, password);
+        })
+        .then(() => location.reload()) // Перезагрузка страницы после успешного входа
+        .catch(err => alert('Ошибка входа: ' + err.message));
+    });
+
+    // ========== ГОСТЕВОЙ РЕЖИМ ==========
+    document.getElementById('playGuest').addEventListener('click', () => {
+      // Создаем объект гостя без авторизации
+      currentUser = { uid: 'guest', nickname: 'Гость', records: {} };
+      document.getElementById('authModal').style.display = 'none';
+      updateUserDisplay();
+      updateRecordsDisplay();
+    });
+
+    // ========== ОБНОВЛЕНИЕ ОТОБРАЖЕНИЯ ПОЛЬЗОВАТЕЛЯ ==========
+    function updateUserDisplay() {
+      const userInfo = document.getElementById('userInfo');
+      const nickEl = document.getElementById('userNickname');
+      const loginBtn = document.getElementById('loginBtnMenu');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      // Если пользователь авторизован (не гость)
+      if (currentUser && currentUser.uid !== 'guest' && currentUser.nickname) {
+        nickEl.textContent = currentUser.nickname;
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'block';
+      } else {
+        // Гостевой режим
+        nickEl.textContent = 'Гость';
+        loginBtn.style.display = 'block';
+        logoutBtn.style.display = 'none';
+      }
+      userInfo.style.opacity = '1';
+    }
+
+    // Кнопка "Войти" из главного меню
+    document.getElementById('loginBtnMenu')?.addEventListener('click', () => {
+      document.getElementById('authModal').style.display = 'flex';
+    });
+
+    // ========== ВЫХОД ИЗ АККАУНТА ==========
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+      auth.signOut().then(() => {
+        currentUser = null;
+        document.getElementById('authModal').style.display = 'flex';
+        updateUserDisplay();
+        // Очищаем отображение рекордов
+        document.querySelectorAll('.game-record').forEach(el => el.textContent = '');
+      });
+    });
+
+    // ========== ОТСЛЕЖИВАНИЕ СОСТОЯНИЯ АВТОРИЗАЦИИ ==========
+    // Слушатель изменений состояния авторизации (вход/выход)
+    auth.onAuthStateChanged(user => {
+      if (user && !currentUser) {
+        // Пользователь вошел - загружаем его данные из Firestore
+        db.collection('users').doc(user.uid).get().then(doc => {
+          if (doc.exists) {
+            currentUser = { 
+              uid: user.uid, 
+              nickname: doc.data().nickname, 
+              records: doc.data().records || {} 
+            };
+            document.getElementById('authModal').style.display = 'none';
+          }
+          updateUserDisplay();
+          updateRecordsDisplay();
+        });
+      } else if (!user) {
+        // Пользователь вышел
+        currentUser = null;
+        updateUserDisplay();
+      }
+    });
+
+    // ========== ОБРАБОТКА ВОЗВРАТА ИЗ ИГРЫ ==========
+    // Если вернулись из игры (параметр fromGame=true в URL)
+    if (window.location.search.includes('fromGame=true')) {
+      document.getElementById('authModal').style.display = 'none';
+      updateUserDisplay();
+    }
+
+    // Инициализация при загрузке страницы
+    updateUserDisplay();
+  </script>
+
+  <!-- ========== АДАПТИВНОЕ МАСШТАБИРОВАНИЕ ========== -->
+  <!-- Скрипт для масштабирования интерфейса под разные размеры экранов -->
+  <script>
+    function applyScale() {
+      // Базовые размеры для масштабирования (Full HD)
+      const baseWidth = 1920;
+      const baseHeight = 1080;
+
+      // Вычисляем коэффициенты масштабирования
+      const scaleX = window.innerWidth / baseWidth;
+      const scaleY = window.innerHeight / baseHeight;
+      let scale = Math.min(scaleX, scaleY); // Используем меньший коэффициент для сохранения пропорций
+
+      // Минимальный масштаб (чтобы не было слишком мелко)
+      if (scale < 0.65) scale = 0.65;
+
+      // Применяем масштабирование к body
+      document.body.style.transform = `scale(${scale})`;
+      document.body.style.transformOrigin = 'top left';
+      document.body.style.width = `${baseWidth}px`;
+      document.body.style.height = `${baseHeight}px`;
+
+      // Центрируем контент на экране
+      const offsetX = (window.innerWidth - baseWidth * scale) / 2;
+      const offsetY = (window.innerHeight - baseHeight * scale) / 2;
+      document.body.style.position = 'absolute';
+      document.body.style.left = `${offsetX}px`;
+      document.body.style.top = `${offsetY}px`;
+    }
+
+    // Применяем масштабирование при загрузке и изменении размера окна
+    window.addEventListener('load', applyScale);
+    window.addEventListener('resize', applyScale);
+  </script>
+
+  <!-- ========== НАСТРОЙКА CANVAS ДЛЯ ПРЕВЬЮ ========== -->
+  <!-- Скрипт для правильного масштабирования canvas с превью игр -->
+  <script>
+    const botCanvas = document.getElementById('botCanvas');
+    const botCtx = botCanvas.getContext('2d');
+
+    // Функция изменения размера canvas под размер контейнера
+    function resizeBotCanvas() {
+      const rect = botCanvas.getBoundingClientRect();
+      botCanvas.width = rect.width;
+      botCanvas.height = rect.height;
+    }
+
+    // Обновляем размер canvas при загрузке и изменении размера окна
+    window.addEventListener('load', resizeBotCanvas);
+    window.addEventListener('resize', resizeBotCanvas);
+  </script>
+
+  <!-- Подключение скрипта лаунчера игр (defer, чтобы сначала загрузилась разметка) -->
+  <script defer src="js/launcher-final.js"></script>
+</body>
+</html>

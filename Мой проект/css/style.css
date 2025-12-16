@@ -1,0 +1,352 @@
+/* =============================================== */
+/* НЕОНОВЫЕ ИГРЫ — ЕДИНЫЙ СТИЛЬ 2025              */
+/* Всё красиво, компактно, профессионально        */
+/* =============================================== */
+
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: #000 url('../img/tv-bg.png') center/cover no-repeat fixed;
+  color: #0ff;
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* ==================== ГЛАВНОЕ МЕНЮ ==================== */
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.container h1 {
+  font-size: 3.2rem;
+  margin-bottom: 40px;
+  text-shadow: 0 0 20px rgba(0,255,255,0.8);
+  letter-spacing: 8px;
+  color: #0ff;
+  font-weight: 900;
+}
+
+/* Лаунчер */
+.game-launcher {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+  width: 100%;
+  max-width: 1500px;
+  position: relative;
+}
+
+/* Превью */
+.live-preview-bg {
+  width: 680px;
+  height: 480px;
+  border-radius: 34px;
+  overflow: hidden;
+  position: relative;
+  border: 6px solid rgba(0,255,255,0.5);
+  box-shadow: 0 0 40px rgba(0,255,255,0.4);
+  flex-shrink: 0;
+}
+
+#botCanvas { 
+  width: 100%; 
+  height: 100%; 
+  image-rendering: pixelated;
+  filter: brightness(1.05) contrast(1.1);
+}
+
+.overlay-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 30px 20px 25px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.95), transparent);
+  text-align: center;
+  pointer-events: none;
+}
+.overlay-info h2 { 
+  font-size: 3rem; 
+  margin-bottom: 8px; 
+  text-shadow: 0 0 15px rgba(0,255,255,0.8); 
+  color: #0ff; 
+}
+.overlay-info p { 
+  font-size: 1.3rem; 
+  margin-bottom: 20px; 
+  opacity: 0.9; 
+  color: #0df; 
+}
+.overlay-info button {
+  pointer-events: all;
+  background: #000;
+  color: #0ff;
+  border: 4px solid rgba(0,255,255,0.6);
+  padding: 14px 50px;
+  border-radius: 30px;
+  font-size: 1.7rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.4s;
+  box-shadow: 0 0 25px rgba(0,255,255,0.4);
+}
+.overlay-info button:hover {
+  background: rgba(0,255,255,0.15);
+  transform: scale(1.1);
+  box-shadow: 0 0 40px #0ff;
+}
+
+/* ==================== КАРТОЧКИ ==================== */
+.cards-stack {
+  position: relative;
+  width: 420px;
+  height: 480px;
+  perspective: 2000px;
+  flex-shrink: 0;
+}
+
+.stack-card {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 440px;
+  background: linear-gradient(135deg, #0a0a2e, #16213e);
+  border-radius: 40px;
+  border: 5px solid #333;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  backface-visibility: hidden;
+  transition: all 0.7s ease;
+  gap: 20px;
+}
+
+.stack-card .game-name {
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: #0ff;
+  text-shadow: 0 0 14px rgba(0,255,255,0.7);
+  letter-spacing: 4px;
+  text-align: center;
+  line-height: 1.1;
+  word-break: break-word;
+  max-width: 100%;
+  padding: 0 20px;
+}
+
+.stack-card .game-record {
+  font-size: 2.1rem;
+  color: #22d3ee;
+  text-shadow: 0 0 20px #22d3ee;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.stack-card .game-record:not(:empty) {
+  opacity: 0.95;
+}
+
+.stack-card.active {
+  z-index: 50;
+  border: 6px solid rgba(0,255,255,0.7);
+  box-shadow: 0 0 40px rgba(0,255,255,0.4), 0 30px 80px rgba(0,0,0,0.6);
+  transform: translateX(-50%) translateY(-25px) scale(1.06);
+}
+
+@keyframes cardDown {
+  0%   { transform: translateX(-50%) translateY(-25px) scale(1.06); }
+  40%  { transform: translateX(-50%) translateY(80px) scale(0.98) rotate(-4deg); }
+  100% { transform: translateX(-50%) translateY(0px) scale(1); }
+}
+.card-drop { animation: cardDown 1s cubic-bezier(0.2, 0.85, 0.3, 1) forwards; }
+
+/* Стрелки */
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,255,255,0.1);
+  border: 4px solid rgba(0,255,255,0.5);
+  color: #0ff;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  font-size: 44px;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.4s;
+  backdrop-filter: blur(10px);
+}
+#prevBtn { left: 10px; }      /* Ближе к краю, не улетит */
+#nextBtn { right: 10px; }     /* Ближе к краю */
+.nav-btn:hover {
+  background: rgba(0,255,255,0.2);
+  border-color: #0ff;
+  transform: translateY(-50%) scale(1.2);
+  box-shadow: 0 0 30px rgba(0,255,255,0.4);
+}
+/* ==================== ОКНО АВТОРИЗАЦИИ ==================== */
+#authModal {
+  position: fixed;
+  inset: 0;
+  background: #000 url('../img/tv-bg.png') center/cover no-repeat fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
+}
+
+.auth-container {
+  width: 90%;
+  max-width: 420px;
+  background: rgba(0, 0, 20, 0.97);
+  border: 6px solid #0ff;
+  border-radius: 30px;
+  padding: 40px 32px; /* Увеличил отступы */
+  text-align: center;
+  box-shadow: 
+    0 0 100px rgba(0, 255, 255, 0.8),
+    inset 0 0 80px rgba(0, 0, 0, 0.9);
+  position: relative;
+  backdrop-filter: blur(12px);
+}
+
+.auth-container::before {
+  content: '';
+  position: absolute;
+  inset: -15px;
+  background: radial-gradient(circle, rgba(0,255,255,0.35) 0%, transparent 70%);
+  border-radius: 45px;
+  z-index: -1;
+  animation: pulse 4s infinite alternate;
+}
+@keyframes pulse {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
+.auth-container h2 {
+  font-size: 2.8rem;           /* Было 3.2rem — уменьшил */
+  color: #0ff;
+  text-shadow: 0 0 25px #0ff;
+  margin-bottom: 28px;
+  letter-spacing: 5px;
+  line-height: 1.2;
+  word-spacing: 8px;
+}
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+.tab {
+  padding: 10px 28px;
+  background: transparent;
+  border: 3px solid rgba(0,255,255,0.5);
+  color: #0ff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.tab.active, .tab:hover {
+  background: #0ff;
+  color: #000;
+  box-shadow: 0 0 30px #0ff;
+}
+
+.form {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+.form.active { display: flex; }
+
+.form input {
+  padding: 14px 20px;
+  background: #000;
+  border: 3px solid #0ff;
+  border-radius: 18px;
+  color: #0ff;
+  font-size: 1.4rem;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,255,255,0.2);
+}
+.form input:focus {
+  outline: none;
+  box-shadow: 0 0 35px #0ff;
+  transform: scale(1.02);
+}
+
+.form button, .guest button {
+  padding: 14px;
+  margin-top: 10px;
+  background: #000;
+  border: 4px solid #0ff;
+  color: #0ff;
+  font-size: 1.6rem;
+  font-weight: 900;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 25px rgba(0,255,255,0.3);
+}
+.form button:hover, .guest button:hover {
+  background: #0ff;
+  color: #000;
+  transform: scale(1.06);
+  box-shadow: 0 0 50px #0ff;
+}
+
+.guest {
+  margin-top: 25px;
+}
+
+/* Адаптив */
+@media (max-width: 1000px) {
+  .game-launcher { 
+    flex-direction: column-reverse; 
+    gap: 50px; 
+  }
+  .live-preview-bg { 
+    width: 90vw; 
+    max-width: 700px; 
+    height: 460px; 
+  }
+  .cards-stack { 
+    width: 380px; 
+    height: 440px; 
+  }
+  .stack-card { 
+    width: 360px; 
+    height: 400px; 
+    padding: 30px; 
+    gap: 18px; 
+  }
+  .stack-card .game-name { 
+    font-size: 2.3rem; 
+    letter-spacing: 3px;
+  }
+  .stack-card .game-record { 
+    font-size: 1.9rem; 
+  }
+}

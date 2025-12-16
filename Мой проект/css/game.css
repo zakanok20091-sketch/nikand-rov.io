@@ -1,0 +1,224 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  height: 100vh;
+  background: #000 url('../img/tv-bg.png') center/cover no-repeat fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  font-family: 'Orbitron', sans-serif;
+  image-rendering: pixelated;
+  position: relative;
+}
+
+#gameContainer {
+  width: 800px;
+  height: 600px;
+  position: relative;
+  border-radius: 25px;
+  overflow: hidden;
+  box-shadow: 
+    0 0 100px rgba(0, 255, 255, 0.8),
+    inset 0 0 120px rgba(0, 0, 0, 0.9);
+  transition: all 0.6s ease;
+}
+
+#gameContainer.game-over-mode {
+  box-shadow: 
+    0 0 120px rgba(255, 0, 0, 1),
+    0 0 200px rgba(255, 50, 50, 0.8),
+    inset 0 0 140px rgba(100, 0, 0, 0.9);
+  animation: redPulse 1.5s infinite;
+}
+
+@keyframes redPulse {
+  0%,100% { box-shadow: 0 0 120px rgba(255,0,0,1), 0 0 200px rgba(255,50,50,0.8); }
+  50%     { box-shadow: 0 0 180px rgba(255,0,0,1.2), 0 0 300px rgba(255,100,100,0.9); }
+}
+
+#gameCanvas { 
+  display: block; 
+  image-rendering: pixelated; 
+  transform: scale(1.01); 
+}
+
+#gameContainer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0,255,255,0.04) 0px, rgba(0,255,255,0.04) 2px, transparent 2px, transparent 4px);
+  background-size: 100% 4px;
+  animation: scan 12s linear infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#gameContainer.game-over-mode::before {
+  background: repeating-linear-gradient(0deg, rgba(255,0,0,0.1) 0px, rgba(255,0,0,0.1) 2px, transparent 2px, transparent 4px);
+  animation: scanRed 4s linear infinite;
+}
+
+@keyframes scan { 0% { background-position: 0 0; } 100% { background-position: 0 1000px; } }
+@keyframes scanRed { 0% { background-position: 0 0; } 100% { background-position: 0 1000px; } }
+
+#gameContainer::after {
+  content: '';
+  position: absolute;
+  inset: -30px;
+  background: radial-gradient(circle at center, rgba(0,255,255,0.2) 0%, transparent 70%);
+  border-radius: 40px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+#gameContainer.game-over-mode::after {
+  background: radial-gradient(circle at center, rgba(255,0,0,0.4) 0%, transparent 60%);
+}
+
+#score, #bestScoreLabel, #ammo {
+  position: absolute; color: #0ff; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px #0ff; z-index: 20; }
+#gameContainer.game-over-mode #score,
+#gameContainer.game-over-mode #bestScoreLabel,
+#gameContainer.game-over-mode #ammo { color: #ff3333; text-shadow: 0 0 15px #ff0000; }
+#score { top: 20px; left: 30px; }
+#bestScoreLabel { top: 20px; right: 30px; }
+#ammo { top: 60px; left: 30px; font-size: 22px; }
+#ammo.low-ammo { color: #ff6b6b; text-shadow: 0 0 15px #ff0000; }
+#ammo.reloading { color: #fbbf24; text-shadow: 0 0 15px #fbbf24; animation: pulse 1s infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ПОДСКАЗКА УПРАВЛЕНИЯ */
+#controls-hint {
+  position: absolute;
+  left: calc(50% + 400px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.95);
+  border: 4px solid #0ff;
+  border-left: 10px solid #0ff;
+  border-radius: 0 20px 20px 0;
+  padding: 26px 22px;           /* чуть меньше, чтобы "СТРЕЛЬБА" влезла */
+  color: #0ff;
+  text-shadow: 0 0 12px #0ff;
+  box-shadow: -12px 0 50px rgba(0, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  width: 210px;
+  transition: all 0.5s ease;
+}
+
+#controls-hint .ctrl-title {
+  text-align: center;
+  font-size: 17px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px #0ff;
+}
+
+#controls-hint .ctrl-row {
+  font-size: 13.5px;
+  margin: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#controls-hint .key {
+  background: #000;
+  border: 2.5px solid #0ff;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-weight: bold;
+  font-size: 12px;
+  box-shadow: 0 0 16px #0ff;
+  text-align: center;
+  min-width: 44px;
+}
+
+#controls-hint .key.big {
+  font-size: 12.5px;
+  padding: 8px 16px;
+  min-width: 92px;
+  border-width: 3.5px;
+  box-shadow: 0 0 24px #0ff;
+}
+
+#gameContainer.game-over-mode ~ #controls-hint {
+  opacity: 0;
+  transform: translateY(-50%) translateX(80px);
+  pointer-events: none;
+}
+
+/* КРАСНЫЙ GAME OVER */
+#gameOver {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  color: #ff1a1a;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 30;
+  text-align: center;
+  backdrop-filter: blur(4px);
+}
+
+#gameOver h1 {
+  font-size: 110px;
+  font-weight: 900;
+  margin-bottom: 20px;
+  letter-spacing: 8px;
+  color: #ff3333;
+  text-shadow: 
+    0 0 20px #ff0000,
+    0 0 40px #ff0000,
+    0 0 80px #ff0000,
+    0 0 120px #ff0000;
+  animation: redGlow 1.5s infinite alternate, shake 0.5s infinite;
+}
+
+#gameOver p {
+  font-size: 42px;
+  margin: 20px 0;
+  color: #ff6b6b;
+  text-shadow: 0 0 15px #ff0000;
+}
+
+#gameOver button {
+  margin: 15px;
+  padding: 16px 44px;
+  font-size: 26px;
+  background: transparent;
+  color: #ff1a1a;
+  border: 4px solid #ff1a1a;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 0 30px #ff0000;
+  transition: all 0.3s;
+  font-weight: bold;
+}
+
+#gameOver button:hover {
+  background: #ff1a1a;
+  color: #000;
+  box-shadow: 0 0 50px #ff0000;
+  transform: scale(1.05);
+}
+#bestScoreLabel {
+  display: none !important;
+}
+@keyframes redGlow {
+  from { text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000; }
+  to   { text-shadow: 0 0 40px #ff0000, 0 0 80px #ff0000, 0 0 120px #ff0000; }
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  10%,30%,50%,70%,90% { transform: translateX(-8px); }
+  20%,40%,60%,80% { transform: translateX(8px); }
+}

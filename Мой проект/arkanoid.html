@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arkanoid</title>
+  <link rel="stylesheet" href="css/game.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+  <link rel="icon" href="img/favicon.jpg" type="image/jpeg">
+  <link rel="shortcut icon" href="img/favicon.jpg" type="image/jpeg">
+  <link rel="apple-touch-icon" href="img/favicon.jpg">
+  <!-- Firebase SDK для записи рекордов и авторизации -->
+  <!-- Без defer, так как ниже сразу вызывается firebase.initializeApp(...) в inline-скрипте -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <div id="gameContainer">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <div id="score">СЧЁТ: <span id="currentScore">0</span></div>
+    <div id="bestScoreLabel">РЕКОРД: <span id="bestScore">0</span></div>
+    
+    <div id="gameOver">
+      <h1>GAME OVER</h1>
+      <p>Счёт: <span id="finalScore">0</span></p>
+      <button id="restartBtn">ЗАНОВО (Пробел)</button>
+      <button id="menuBtn">В МЕНЮ (ESC)</button>
+    </div>
+  </div>
+
+  <!-- Подсказка управления справа -->
+  <div id="controls-hint">
+    <div class="ctrl-title">УПРАВЛЕНИЕ</div>
+    <div class="ctrl-row"><span class="key">A D ← →</span> ПЛАТФОРМА</div>
+    
+    <div class="ctrl-row"><span class="key">ESC</span> В МЕНЮ</div>
+  </div>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyD8j7J7uxg9SyTrbfGoLBuszJalrbRHJ0w",
+    authDomain: "neon-games-2025.firebaseapp.com",
+    projectId: "neon-games-2025",
+    storageBucket: "neon-games-2025.firebasestorage.app",
+    messagingSenderId: "509863622306",
+    appId: "1:509863622306:web:e53fa3685235eefcba89fb"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
+<script>
+  // Адаптивное масштабирование всей игры под экран
+  function applyGameScale() {
+    const baseWidth = 1920;
+    const baseHeight = 1080;
+
+    const scaleX = window.innerWidth / baseWidth;
+    const scaleY = window.innerHeight / baseHeight;
+    let scale = Math.min(scaleX, scaleY);
+
+    // Не даём стать слишком мелко (минимум ~65%)
+    if (scale < 0.65) scale = 0.65;
+
+    // Масштабируем весь body
+    document.body.style.transform = `scale(${scale})`;
+    document.body.style.transformOrigin = 'top left';
+    document.body.style.width = `${baseWidth}px`;
+    document.body.style.height = `${baseHeight}px`;
+
+    // Центрируем по экрану
+    const offsetX = (window.innerWidth - baseWidth * scale) / 2;
+    const offsetY = (window.innerHeight - baseHeight * scale) / 2;
+    document.body.style.position = 'absolute';
+    document.body.style.left = `${offsetX}px`;
+    document.body.style.top = `${offsetY}px`;
+  }
+
+  window.addEventListener('load', applyGameScale);
+  window.addEventListener('resize', applyGameScale);
+</script>
+  <!-- Логика игры (defer для более быстрой первичной отрисовки страницы) -->
+  <script defer src="js/arkanoid.js"></script>
+</body>
+</html>
